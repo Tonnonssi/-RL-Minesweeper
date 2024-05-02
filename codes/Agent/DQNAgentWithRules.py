@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/content/drive/My Drive/Minesweeper [RL]/codes')
+
 from Net.basicNet import *
 
 import torch
@@ -7,7 +10,6 @@ import torch.optim as optim
 import random 
 import numpy as np
 from collections import deque
-
 
 # Environment settings
 MEM_SIZE = 50000 
@@ -34,7 +36,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # class 
 class DQNAgent:
-    def __init__(self, env, conv_units=64, dense_units=256):
+    def __init__(self, env, conv_units=64):
         self.env = env
 
         # Deep Q-learning parameters
@@ -44,13 +46,11 @@ class DQNAgent:
 
         self.model = DQN(input_dims=self.env.state.shape,
                          n_actions=self.env.total_tiles,
-                         conv_units=conv_units,
-                         dense_units=dense_units)
+                         conv_units=conv_units)
 
         self.target_model = DQN(input_dims=self.env.state.shape,
                                 n_actions=self.env.total_tiles,
-                                conv_units=conv_units,
-                                dense_units=dense_units)
+                                conv_units=conv_units)
 
         self.target_model.load_state_dict(self.model.state_dict())
 
@@ -90,13 +90,13 @@ class DQNAgent:
             with torch.no_grad():
                 state = torch.tensor(state.reshape(1,1,self.env.nrows,self.env.ncols),
                                          dtype=torch.float32).to(device)
-                total_action = self.model(state).view(-1)
-                total_action = total_action.cpu()
+                self.total_action = self.model(state).view(-1)
+                self.total_action = self.total_action.cpu()
 
                 # 이미 오픈한 타일은 move 대상에서 제외된다.
-                total_action[present_board != self.env.unrevealed] = torch.min(total_action)
+                self.total_action[present_board != self.env.unrevealed] = torch.min(self.total_action)
 
-                action = torch.argmax(total_action).item()
+                action = torch.argmax(self.total_action).item()
 
         return action
 
@@ -111,8 +111,8 @@ class DQNAgent:
         # 배치 안에 저장되어 있는 정보 꺼내기
         current_states, _, _, next_states, _ = zip(*batch)
 
-        current_states =  torch.tensor(current_states, dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
-        next_states = torch.tensor(next_states, dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
+        current_states =  torch.tensor(np.array(current_states), dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
+        next_states = torch.tensor(np.array(next_states), dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
 
         self.model.eval()
         self.target_model.eval()
