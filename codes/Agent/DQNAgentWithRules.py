@@ -90,13 +90,13 @@ class DQNAgent:
             with torch.no_grad():
                 state = torch.tensor(state.reshape(1,1,self.env.nrows,self.env.ncols),
                                          dtype=torch.float32).to(device)
-                self.total_action = self.model(state).view(-1)
-                self.total_action = self.total_action.cpu()
+                total_action = self.model(state).view(-1)
+                total_action = total_action.cpu()
 
                 # 이미 오픈한 타일은 move 대상에서 제외된다.
-                self.total_action[present_board != self.env.unrevealed] = torch.min(self.total_action)
+                total_action[present_board != self.env.unrevealed] = torch.min(total_action)
 
-                action = torch.argmax(self.total_action).item()
+                action = torch.argmax(total_action).item()
 
         return action
 
@@ -160,3 +160,17 @@ class DQNAgent:
 
         # decay epsilon
         self.epsilon = max(EPSILON_MIN, self.epsilon*EPSILON_DECAY)
+
+
+class Limited18DQNAgent(DQNAgent):
+    def __init__(self, env, conv_units=64, replay_memory=False):
+        super().__init__(env, conv_units)
+        # 불러올 리플레이 메모리가 있다면 불러옴
+        if replay_memory:
+            self.replay_memory = replay_memory
+
+    def update_replay_memory(self, transition):
+        current_state = transition[0]
+
+        if np.sum(current_state != self.env.unrevealed) >= 18: # 경험적인 데이터 18(나름 하이퍼파라미터긴 함ㅋ)
+            self.replay_memory.append(transition)
