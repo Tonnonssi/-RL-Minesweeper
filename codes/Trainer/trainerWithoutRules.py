@@ -41,6 +41,7 @@ class Trainer:
         start = time.time()
         self.train()
         print(round(time.time() - start, 2))
+        
         self.visualize_train()
         self.save_model()
 

@@ -138,7 +138,6 @@ class MinesweeperEnv:
         done = False
         coord = self.get_coord(action_idx)
 
-        current_state = self.state
         current_mask = copy.deepcopy(self.board[0])
 
         # action에 따라 행동을 수행

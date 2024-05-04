@@ -96,6 +96,8 @@ class DQNAgent:
                 # 이미 오픈한 타일은 move 대상에서 제외된다.
                 total_action[present_board != self.env.unrevealed] = torch.min(total_action)
 
+                self.total_action = total_action
+                
                 action = torch.argmax(total_action).item()
 
         return action

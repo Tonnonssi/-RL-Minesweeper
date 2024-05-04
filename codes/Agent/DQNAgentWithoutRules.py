@@ -88,6 +88,8 @@ class DQNAgent:
                 total_action = self.model(state).view(-1)
                 total_action = total_action.cpu()
 
+                self.total_action = total_action
+                
                 action = torch.argmax(total_action).item()
 
         return action
