@@ -115,7 +115,7 @@ resnet을 테스트할 때 bias를 끈 상태에서 학습이 이뤄져서 기�
 | 4/3 | 지뢰를 역추적하기가 너무 어렵다. | plt.scatter을 통해 지뢰 시각화 |
 
 ### 01. Q-Table 시각화
-모델이 전체 타일 중 어떤 타일을 지뢰가 아니라 판단하는지를 시각화하고 싶었다. agent의 model의 output을 class의 어트리뷰트로 꺼내와 현재 state, 다음 state와 함께 Q-table로 시각화시켰다. 
+모델이 전체 타일 중 어떤 타일을 지뢰가 아니라 판단하는지를 시각화하고 싶었다. agent의 model의 output을 class의 어트리뷰트로 꺼내와 현재 state, 다음 state와 함께 Q-table로 시각화시켰다. 값을 softmax를 이용해 스케일링했다. 
 
 ![Alt text](imgs/Q_table.png)
 ### 02. env.render에서 누른 타일 시각화 
@@ -123,7 +123,7 @@ resnet을 테스트할 때 bias를 끈 상태에서 학습이 이뤄져서 기�
 ![Alt text](imgs/env_render.png)
 
 ### 03. 지뢰 시각화 
-현재 state, 다음 state, Q-table을 시각화했을 떄 진 게임에서는 누른 지뢰가 마젠타 색으로 나타나 위치를 알 수 있었지만, 전체 지뢰 분포를 알 수 없었기 때문에 불편했다. 이를 문제를 해결하기 위해 heatmap 위에 plt.scatter로 지뢰를 뿌렸다. 
+현재 state, 다음 state, Q-table을 시각화했을 떄 진 게임에서는 누른 지뢰가 마젠타 색으로 나타나 위치를 알 수 있었지만, 전체 지뢰 분포를 알 수 없었기 때문에 불편했다. 이를 문제를 해결하기 위해 heatmap 위에 plt.scatter로 지뢰를 뿌렸다. 또한 Q-table 스케일링 방법을 softmax에서 min-max로 바꾸었다. 
 ![Alt text](imgs/mine_visualize.png)
 
 ## 06 Tester
