@@ -1,4 +1,14 @@
 # Development Log
+## Contents
+01 | [Env](#01-env)  
+02 | [Agent](#02-agent)  
+03 | [Net](#03-net)  
+04 | [Train & Valid](#04-train--valid)  
+05 | [Visualization](#05-visualization)  
+06 | [Tester](#06-tester)  
+07 | [Etc](#07-etc)  
+08 | [Reference](#referrence)
+
 ## 01 Env
 | 날짜 | 문제 상황 | 해결 | 
 | -- | -- | -- | 
@@ -88,12 +98,13 @@ LLM에서 아이디어를 얻어, 에피소드를 병렬로 구현하면 더 많
 ### 04. bias 
 resnet을 테스트할 때 bias를 끈 상태에서 학습이 이뤄져서 기본 모델에 적용해봤다. 02만큼의 극적인 변화는 없었지만, 근소하게 더 안정적인 학습이 이뤄졌다. 
 
-## 04 Main
+## 04 Train  & Valid
 | 날짜 | 문제 상황 | 해결 | 
 | -- | -- | -- | 
 | 4월 말 | 최고 acc를 저장하는 것에서 논리적 오류 존재 | 후반 episode에서 valid 시행 |
 | 5/2 | 학습, 시각화, 저장이 따로 따로 분리되어 있음 | 자동 class화 |
 | 5/3 | 후반 에피소드에만 valid를 하는 것이 이상함 | train에서 최고 acc 달성 후 valid 시작 |
+| 5/5 | valid의 무한 에피소드 문제 | Valid Shut Down Code |
 
 ### 01. 후반 에피소드에서 valid 시행
 기존에는 train 중 최고 acc와 가장 마지막 model을 저장했다. 하지만 최고 acc는 매 timestep마다 학습을 진행하는 상황에서 100마다 승률을 구하는 방식이었기 때문에 최고 acc는 실질적으로 최고 acc가 아닐 가능성이 높다. 이 문제를 해결하기 위해 model을 고정시키고 n번의 에피소드를 시행해 주어진 모델의 성능을 측정하는 valid 코드가 후반 에피소드일 때 10 에피소드 단위로 돌아가게 만들었다. 
@@ -106,6 +117,8 @@ resnet을 테스트할 때 bias를 끈 상태에서 학습이 이뤄져서 기�
 이 차이에서 최적의 모델을 찾기엔 valid의 시기가 애매하며, 검정을 위한 표본 수가 충분치 않다는 생각이 들었다. 이 문제를 해결하기 위해 valid의 시점을 train에서 최고 acc를 달성한 이후 10개의 에피소드마다 valid를 1000개의 표본으로 돌리는 것으로 문제를 해결했다. 
 - valid를 위한 최적의 표본 수가 뭔지 통계적으로 검정(글로 남기기)
 
+### 04. Valid Shut Down Code
+후반 에피소드에서만 valid를 진행하는 경우는 이미 학습이 진행되어 까진 타일을 누르지 않아 no_progress + done=False 상황에서도 무한 에피소드 상황에 빠지지 않았다. 하지만 03 형식으로 valid 방식을 바꾼 이후에는 학습 초반에도 valid가 이루어졌기 때문에 쉽게 무한 에피소드 상황에 빠졌다. 이 케이스를 피하기 위해 no_progress + done=True로도 학습을 진행했지만, done=False일 때만큼의 성능이 나오진 않았다. 이 문제를 해결하기 위해 탐험률이 존재해 언젠가는 무한 에피소드 상황에서 탈출할 수 있는 학습 상황에서는 done=False로 두되, 탐험률이 0인 valid에서는 current_state와 next_state가 동일하다면 강제로 에피소드를 중단시키는 Shut Down 코드를 작성해 문제를 해결했다. 
 
 ## 05 Visualization 
 | 날짜 | 문제 상황 | 해결 | 
@@ -140,11 +153,11 @@ resnet을 테스트할 때 bias를 끈 상태에서 학습이 이뤄져서 기�
 | 5/1 | 작업 내역이 너무 복잡함 | py files와 ipynb 콜라보 feat.패키지화 |
 
 ### 01. py + ipynb
-여러 케이스를 나누어 작업을 하다보니, 공통 코드가 모든 곳에 퍼져 있어 수정했을 때 일괄적인 적용이 어렵고 코드 길이가 길어져 가독성이 떨어졌다. 이런 문제점을 바탕으로 py file(gdrive local 연결 후 local에서 작업)과 colab으로 작업 방식을 바꾸었다. 
+여러 케이스를 나누어 작업을 하다보니, 공통 코드가 여러 곳에 퍼져 있어 수정했을 때 일괄적인 적용이 어렵고 전체 코드 길이가 길어져 가독성이 떨어졌다. 이런 문제점을 해결하고자 py file(gdrive local 연결 후 local에서 작업)과 colab을 동시에 사용하는 것으로 작업 방식을 바꾸었다. 
 
 ## + Referrence
-1. 기본 골격 + 처음 따라한 레퍼런스 
+1. 기본 골격 + 처음 따라한 레퍼런스  
     https://github.com/sdlee94/Minesweeper-AI-Reinforcement-Learning
-2. CNN 아이디어를 얻은 레퍼런스 
+2. CNN 아이디어를 얻은 레퍼런스  
     https://github.com/AlexMGitHub/Minesweeper-DDQN
 3.
