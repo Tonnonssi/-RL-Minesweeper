@@ -132,7 +132,10 @@ class Trainer:
 
                 action = agent.get_action(current_state)
 
-                _, reward, done = env.step(action)
+                next_state, reward, done = env.step(action)
+                
+                if (current_state == next_state).all(): # 같은 곳을 계속 누르는 상황을 탈출시키는 ShutDown Code
+                    done = True
 
                 episode_reward += reward
                 n_clicks += 1

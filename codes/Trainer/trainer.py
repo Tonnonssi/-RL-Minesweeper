@@ -20,7 +20,7 @@ VALID_SAMPLE = 1000
 VALID_INTERVAL = 10
 
 class Trainer:
-    def __init__(self, env, agent, name):
+    def __init__(self, env, agent, name, train_start=True):
         self.env = env
         self.agent = agent
 
@@ -38,14 +38,18 @@ class Trainer:
         self.baseline_train = 0
         self.baseline_valid = 0
 
-        start = time.time()
-        self.train()
-        print(round(time.time() - start, 2))
-        self.visualize_train()
-        self.save_model()
+        if train_start:
+            start = time.time()
+            self.train()
+            print(round(time.time() - start, 2))
+
+            self.visualize_train()
+            self.save_model()
 
     def train(self):
         global VALID_SAMPLE
+        win_rate = 0
+        valid_win_rate = 0
 
         for episode in range(EPISODES):
             self.env.reset()
@@ -67,9 +71,9 @@ class Trainer:
 
                 if TRAIN_INTERVAL == TRAIN_INTERVALS[0]: # every timestep
                     self.agent.train(done)
-                
+
                 n_clicks += 1
-            
+
             if TRAIN_INTERVAL == TRAIN_INTERVALS[1]: # every episodes
                 self.agent.train(done)
 
@@ -98,24 +102,25 @@ class Trainer:
                     self.SIMPLE_VALID = 10
 
             if self.SIMPLE_VALID > 0:
-                valid_state = self.agent.model.state_dict()
-                valid_win_rate = self.valid_model(self.env, self.tester_agent, episode, VALID_SAMPLE, valid_state)
-                self.SIMPLE_VALID -= 1
+                    valid_state = self.agent.model.state_dict()
+                    valid_win_rate = self.valid_model(self.env, self.tester_agent, episode, VALID_SAMPLE, valid_state)
+                    self.SIMPLE_VALID -= 1
 
-                if win_rate > self.baseline_valid:
-                    self.baseline_valid = valid_win_rate
-                    self.best_model_valid = self.agent.model.state_dict()
+            if win_rate > self.baseline_valid:
+                self.baseline_valid = valid_win_rate
+                self.best_model_valid = self.agent.model.state_dict()
 
     def valid_model(self, env, agent, episode, epoch, model_state):
 
         progress_list, wins_list, ep_rewards = [], [], []
 
-        agent.epsilon = 0.0 # valid에서는 탐험을 꺼준다. 
+        agent.epsilon = 0.0 # valid에서는 탐험을 꺼준다.
 
         agent.model.load_state_dict(model_state)
         agent.target_model.load_state_dict(model_state)
 
-        for _ in range(epoch):
+        for i in range(epoch):
+
             env.reset()
 
             done = False
@@ -126,22 +131,22 @@ class Trainer:
                 current_state = env.state
 
                 action = agent.get_action(current_state)
-                _, reward, done = env.step(action)
+
+                next_state, reward, done = env.step(action)
+                
+                if current_state == next_state:
+                    done = True
 
                 episode_reward += reward
                 n_clicks += 1
 
             progress_list.append(n_clicks)
             ep_rewards.append(episode_reward)
-
-            if reward == env.rewards['win']:
-                wins_list.append(1)
-            else:
-                wins_list.append(0)
+            wins_list.append(reward == env.rewards['win'])
 
         print(f"Valid n:{epoch}, Median progress: {np.median(progress_list):.2f}, Median reward: {np.median(ep_rewards):.2f}, Win rate : {np.sum(wins_list)/len(wins_list)}")
 
-        return np.sum(wins_list)/len(wins_list) # 승률을 반환한다. 
+        return np.sum(wins_list)/len(wins_list) # 승률을 반환한다.
 
     def visualize_train(self, progress=True, win_rates=True, rewards=True, losses=True):
         progresses = []
@@ -161,7 +166,7 @@ class Trainer:
         xticks = np.arange(0, len(self.progress_list), interval)
 
         if progress:
-            if len(progresses) > 500:
+            if len(progresses) > 50:
                 plt.xticks(xticks, [str(x) + 'K' for x in xticks // 10])
             plt.axhline(y=(sum(self.progress_list)/len(self.progress_list)), color='b', linestyle='-')
             plt.scatter(range(len(progresses)), progresses, marker='.',alpha=0.3,
@@ -190,7 +195,7 @@ class Trainer:
             plt.annotate(round(max(rewards),2), (rewards.index(max(rewards))+5, max(rewards)))
             plt.title(f"Median Episode Reward per {INTERVAL} episodes")
             plt.show()
-        
+
         if losses:
             if len(progresses) > 50:
                 plt.xticks(xticks, [str(x) + 'K' for x in xticks // 10])
@@ -228,4 +233,5 @@ class Trainer:
         create_file(f_path, name)
         save_file(f_path + '/' + name, f'{len(self.progress_list)}epi_max_train{self.baseline_train}_valid{self.baseline_valid}',save_point)
         print('모델이 저장되었습니다.')
+
               
