@@ -3,6 +3,8 @@ import numpy as np
 import copy
 from collections import deque
 from IPython.display import display
+import pickle
+import random
 
 class MinesweeperEnv:
     '''
@@ -202,3 +204,36 @@ class MinesweeperEnv:
             color = 'magenta'
 
         return f'color: {color}'
+    
+class LimitedMinesweeperEnv(MinesweeperEnv):
+    def __init__(self, map_size, n_mines, total_boards=None, train=True):
+        super().__init__(map_size, n_mines)
+
+        self.train = train
+
+        if total_boards is None:
+            with open("/content/drive/MyDrive/Minesweeper [RL]/dataset/easy1000boards.pkl","rb") as f:
+                self.total_boards = pickle.load(f)
+        else:
+            self.total_boards = total_boards
+
+        self.n_boards = len(self.total_boards)
+
+        if train:
+            self.board = self.total_boards[0]
+        else:
+            self.board_iteration = iter(total_boards)
+            self.board = next(self.board_iteration)
+
+    def reset(self):
+        self.n_clicks = 0
+        self.n_progress = 0
+
+        if self.train:
+            self.board = random.choice(self.total_boards)
+            self.board[0] = np.ones(shape=self.map_size) # board가 수정되기 때문에 초기화해줘야 한다.
+
+        else:
+            self.board = next(self.board_iteration)
+
+        self.state = self.create_state(self.board)
