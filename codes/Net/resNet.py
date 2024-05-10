@@ -23,7 +23,7 @@ class BasicBlock(nn.Module):
         self.conv1 = conv3x3(in_planes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
-        
+
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
         self.down_sample = down_sample
@@ -45,8 +45,8 @@ class BasicBlock(nn.Module):
         out = self.relu(out)
         return out
     
-class DQN(nn.Module):
-    def __init__(self, input_dims, n_actions, conv_units, dense_units=None):
+class Net(nn.Module):
+    def __init__(self, input_dims, n_actions, conv_units):
         super().__init__()
 
         self.down_sample = nn.Sequential(

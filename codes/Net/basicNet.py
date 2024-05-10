@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-class DQN(nn.Module):
+class Net(nn.Module):
     def __init__(self, input_dims, n_actions, conv_units):
         super().__init__()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=conv_units, kernel_size=(3,3), bias=False, padding=2)
