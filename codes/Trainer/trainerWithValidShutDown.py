@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-from Agent.DQNAgentWithoutRules import *
+from codes.agent.vectorDQN import *
 
 EPISODES = 50000
 PRINT_INTERVAL = 100
@@ -30,7 +30,7 @@ class Trainer:
 
         self.SIMPLE_VALID = 0
         self.name = name
-        self.tester_agent = DQNAgent(env=env, conv_units=CONV_UNITS)
+        self.tester_agent = Agent(env=env, conv_units=CONV_UNITS)
 
         self.best_model_train = None
         self.best_model_valid = None
