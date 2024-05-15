@@ -4,6 +4,7 @@ sys.path.append('/content/drive/My Drive/Minesweeper [RL]/codes')
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import copy 
 
 import random 
 import numpy as np
@@ -42,34 +43,34 @@ class Agent:
 
         # Learning Settings
         self.batch_size = kwargs.get("BATCH_SIZE")
-        self.learning_rate = kwargs.get("LEARNING_RATE")
-        self.learn_decay = kwargs.get("LEARN_DECAY")
-        self.learn_min = kwargs.get("LEARN_MIN")
-        self.discount = kwargs.get("DISCOUNT")
+        self.learn_decay = kwargs.get("LEARNING_RATE")
+        self.learn_min = kwargs.get("LEARN_DECAY")
+        self.discount = kwargs.get("LEARN_MIN")
 
         # Exploration Settings
         self.epsilon = kwargs.get("EPSILON")
         self.epsilon_decay = kwargs.get("EPSILON_DECAY")
         self.epsilon_min = kwargs.get("EPSILON_MIN")
 
+        # loss 
+        self.loss_fn = nn.MSELoss()
+        self.losses = []
+
+        # target net update
+        self.target_update_counter = 0
         self.update_target_baseline = kwargs.get("UPDATE_TARGET_EVERY")
 
-        self.model = net
-        self.target_model = net
+        # def model 
+        self.model = copy.deepcopy(net)
+        self.target_model = copy.deepcopy(net)
 
         self.target_model.load_state_dict(self.model.state_dict())
-
-        self.replay_memory = deque(maxlen=self.mem_size)
-
-        self.loss_fn = nn.MSELoss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
 
         self.model.to(device)
         self.target_model.to(device)
 
-        self.target_update_counter = 0
-
-        self.losses = []
+        # replay memory
+        self.replay_memory = deque(maxlen=self.mem_size)
 
     def update_target_model(self):
         self.target_model.load_state_dict(self.model.state_dict())
@@ -103,6 +104,9 @@ class Agent:
     def train(self, done):
         if len(self.replay_memory) < self.mem_size_min:
             return
+        
+        # optimizer
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
 
         # 리플레이 메모리에서 배치 사이즈만큼 데이터를 꺼낸다.
         # batch[i] = (current_state, action, reward, new_current_state, done)
@@ -152,8 +156,8 @@ class Agent:
         if done:
             self.target_update_counter += 1
 
-        if self.target_update_counter > self.update_target_baseline:
-            self.target_model.load_state_dict(self.model.state_dict())
+        if self.target_update_counter == self.update_target_baseline:
+            self.update_target_model()
             self.target_update_counter = 0
 
         # decay learning rate
@@ -164,8 +168,8 @@ class Agent:
 
 
 class Limited18Agent(Agent):
-    def __init__(self, env, conv_units=64, replay_memory=False, **kwargs):
-        super().__init__(env, conv_units, **kwargs)
+    def __init__(self, env, net, replay_memory=False, **kwargs):
+        super().__init__(env, net, **kwargs)
         # 불러올 리플레이 메모리가 있다면 불러옴
         if replay_memory:
             self.replay_memory = replay_memory

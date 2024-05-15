@@ -4,7 +4,7 @@ sys.path.append('/content/drive/My Drive/Minesweeper [RL]/codes')
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
+import copy
 import random 
 import numpy as np
 from collections import deque
@@ -52,24 +52,25 @@ class Agent:
         self.epsilon_decay = kwargs.get("EPSILON_DECAY")
         self.epsilon_min = kwargs.get("EPSILON_MIN")
 
+        # loss 
+        self.loss_fn = nn.MSELoss()
+        self.losses = []
+
+        # target net update
+        self.target_update_counter = 0
         self.update_target_baseline = kwargs.get("UPDATE_TARGET_EVERY")
 
-        self.model = net
-        self.target_model = net
+        # def model 
+        self.model = copy.deepcopy(net)
+        self.target_model = copy.deepcopy(net)
 
         self.target_model.load_state_dict(self.model.state_dict())
-
-        self.replay_memory = deque(maxlen=self.mem_size)
-
-        self.loss_fn = nn.MSELoss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
 
         self.model.to(device)
         self.target_model.to(device)
 
-        self.target_update_counter = 0
-
-        self.losses = []
+        # replay memory
+        self.replay_memory = deque(maxlen=self.mem_size)
 
     def update_target_model(self):
         self.target_model.load_state_dict(self.model.state_dict())
@@ -107,6 +108,9 @@ class Agent:
     def train(self, done):
         if len(self.replay_memory) < self.mem_size_min:
             return
+        
+        # optimizer
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
 
         self.model.train()
         self.target_model.eval()
@@ -148,8 +152,8 @@ class Agent:
         if done:
             self.target_update_counter += 1
 
-        if self.target_update_counter > self.update_target_baseline:
-            self.target_model.load_state_dict(self.model.state_dict())
+        if self.target_update_counter == self.update_target_baseline:
+            self.update_target_model()
             self.target_update_counter = 0
 
         # decay learning rate
