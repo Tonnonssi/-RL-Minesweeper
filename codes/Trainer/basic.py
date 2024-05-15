@@ -102,7 +102,7 @@ class Trainer:
                 win_rate = np.sum(self.wins_list[-self.print_interval:]) / self.print_interval
                 med_reward = np.median(self.ep_rewards_list[-self.print_interval:])
 
-                print(f"Episode: [{self.episodes}/{episode+1}], Median progress: {med_progress:.2f}, Median reward: {med_reward:.2f}, Win rate : {win_rate:.2f}, Epsilon: {self.agent.epsilon:.2f}")
+                print(f"Episode: [{self.episodes}/{episode+1}], Median progress: {med_progress:.2f}, Median reward: {med_reward:.2f}, Win rate : {win_rate:.3f}, Epsilon: {self.agent.epsilon:.2f}")
 
                 if win_rate > self.baseline_train:
                     self.baseline_train = win_rate
