@@ -42,9 +42,10 @@ class Agent:
 
         # Learning Settings
         self.batch_size = kwargs.get("BATCH_SIZE")
-        self.learn_decay = kwargs.get("LEARNING_RATE")
-        self.learn_min = kwargs.get("LEARN_DECAY")
-        self.discount = kwargs.get("LEARN_MIN")
+        self.learning_rate = kwargs.get("LEARNING_RATE")
+        self.learn_decay = kwargs.get("LEARN_DECAY")
+        self.learn_min = kwargs.get("LEARN_MIN")
+        self.discount = kwargs.get("DISCOUNT")
 
         # Exploration Settings
         self.epsilon = kwargs.get("EPSILON")

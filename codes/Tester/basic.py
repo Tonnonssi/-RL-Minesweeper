@@ -44,8 +44,10 @@ class PerformTester:
 
 
         # palette for visualize
-        minesweeper_cmap = ['#FF00FF', '#FFFFFF', '#6A5ACD', '#0000FF', '#008000', '#FF0000',
-                    '#191970', '#A52A2A', '#7FFFD4', '#000000', '#C0C0C0']
+        minesweeper_cmap = ['#FF00FF', '#FFFFFF', '#6A5ACD', 
+                            '#0000FF', '#008000', '#FF0000',
+                            '#191970', '#A52A2A', '#7FFFD4', 
+                            '#000000', '#C0C0C0']
         self.minesweeper_palette = sns.color_palette(minesweeper_cmap)
 
     def test_model(self, n_episode, model_state):
