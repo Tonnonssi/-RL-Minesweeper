@@ -1,8 +1,6 @@
 import sys
 sys.path.append('/content/drive/My Drive/Minesweeper [RL]/codes')
 
-from net.basicNet import *
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -12,31 +10,31 @@ import numpy as np
 from collections import deque
 
 # Environment settings
-# MEM_SIZE = 50000 
-# MEM_SIZE_MIN = 1000 
+MEM_SIZE = 50000 
+MEM_SIZE_MIN = 1000 
 
-# # Learning settings
-# BATCH_SIZE = 64
-# LEARNING_RATE = 0.01
-# LEARN_DECAY = 0.99975 
-# LEARN_MIN = 0.001
-# DISCOUNT = 0.1 
+# Learning settings
+BATCH_SIZE = 64
+LEARNING_RATE = 0.01
+LEARN_DECAY = 0.99975 
+LEARN_MIN = 0.001
+DISCOUNT = 0.1 
 
-# # Exploration settings
-# EPSILON = 0.95
-# EPSILON_DECAY = 0.99975
-# EPSILON_MIN = 0.01
+# Exploration settings
+EPSILON = 0.95
+EPSILON_DECAY = 0.99975
+EPSILON_MIN = 0.01
 
-# # DQN settings
-# CONV_UNITS = 64 
-# UPDATE_TARGET_EVERY = 5
+# DQN settings
+CONV_UNITS = 64 
+UPDATE_TARGET_EVERY = 5
 
 # device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # class 
 class Agent:
-    def __init__(self, env, conv_units=64, **kwargs):
+    def __init__(self, env, net, **kwargs):
         self.env = env
 
         # Environment Settings
@@ -56,13 +54,8 @@ class Agent:
 
         self.update_target_baseline = kwargs.get("UPDATE_TARGET_EVERY")
 
-        self.model = Net(input_dims=self.env.state.shape,
-                         n_actions=self.env.total_tiles,
-                         conv_units=conv_units)
-
-        self.target_model = Net(input_dims=self.env.state.shape,
-                                n_actions=self.env.total_tiles,
-                                conv_units=conv_units)
+        self.model = net
+        self.target_model = net
 
         self.target_model.load_state_dict(self.model.state_dict())
 
@@ -190,7 +183,6 @@ class Limited18Agent(Agent):
 
 
 # agent = Agent(env, 
-#               conv_units=CONV_UNITS, 
 #               MEM_SIZE=MEM_SIZE,
 #               MEM_SIZE_MIN=MEM_SIZE_MIN,
 #               BATCH_SIZE=BATCH_SIZE,
@@ -204,7 +196,6 @@ class Limited18Agent(Agent):
 #               UPDATE_TARGET_EVERY=UPDATE_TARGET_EVERY)
             
 # agent = Limited18Agent(env, 
-#                       conv_units=CONV_UNITS, 
 #                       MEM_SIZE=MEM_SIZE,
 #                       MEM_SIZE_MIN=MEM_SIZE_MIN,
 #                       BATCH_SIZE=BATCH_SIZE,

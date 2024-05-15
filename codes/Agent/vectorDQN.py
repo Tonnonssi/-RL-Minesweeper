@@ -1,8 +1,6 @@
 import sys
 sys.path.append('/content/drive/My Drive/Minesweeper [RL]/codes')
 
-from net.basicNet import *
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -35,7 +33,7 @@ UPDATE_TARGET_EVERY = 5
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Agent:
-    def __init__(self, env, conv_units=64, **kwargs):
+    def __init__(self, env, net, **kwargs):
         self.env = env
 
         # Environment Settings
@@ -44,9 +42,10 @@ class Agent:
 
         # Learning Settings
         self.batch_size = kwargs.get("BATCH_SIZE")
-        self.learn_decay = kwargs.get("LEARNING_RATE")
-        self.learn_min = kwargs.get("LEARN_DECAY")
-        self.discount = kwargs.get("LEARN_MIN")
+        self.learning_rate = kwargs.get("LEARNING_RATE")
+        self.learn_decay = kwargs.get("LEARN_DECAY")
+        self.learn_min = kwargs.get("LEARN_MIN")
+        self.discount = kwargs.get("DISCOUNT")
 
         # Exploration Settings
         self.epsilon = kwargs.get("EPSILON")
@@ -55,13 +54,8 @@ class Agent:
 
         self.update_target_baseline = kwargs.get("UPDATE_TARGET_EVERY")
 
-        self.model = Net(input_dims=self.env.state.shape,
-                         n_actions=self.env.total_tiles,
-                         conv_units=conv_units)
-
-        self.target_model = Net(input_dims=self.env.state.shape,
-                                n_actions=self.env.total_tiles,
-                                conv_units=conv_units)
+        self.model = net
+        self.target_model = net
 
         self.target_model.load_state_dict(self.model.state_dict())
 
@@ -184,7 +178,6 @@ class Limited18Agent(Agent):
 
 
 # agent = Agent(env, 
-#               conv_units=CONV_UNITS, 
 #               MEM_SIZE=MEM_SIZE,
 #               MEM_SIZE_MIN=MEM_SIZE_MIN,
 #               BATCH_SIZE=BATCH_SIZE,
@@ -198,7 +191,6 @@ class Limited18Agent(Agent):
 #               UPDATE_TARGET_EVERY=UPDATE_TARGET_EVERY)
             
 # agent = Limited18Agent(env, 
-#                       conv_units=CONV_UNITS, 
 #                       MEM_SIZE=MEM_SIZE,
 #                       MEM_SIZE_MIN=MEM_SIZE_MIN,
 #                       BATCH_SIZE=BATCH_SIZE,

@@ -249,7 +249,7 @@ class Trainer:
 #                       EPISODES = EPISODES,
 #                       PRINT_INTERVAL = PRINT_INTERVAL,
 #                       TRAIN_RENDER = TRAIN_RENDER,
-#                       TRAIN_TIMESTEP = TRAIN_TIMESTEP[0],
+#                       TRAIN_TIMESTEP = TRAIN_TIMESTEPS[0],
 #                       VIUSAL_INTERVAL = VIUSAL_INTERVAL,
 #                       VALID_SAMPLE = VALID_SAMPLE,
 #                       VALID_INTERVAL = VALID_INTERVAL)
