@@ -10,24 +10,24 @@ import numpy as np
 from collections import deque
 
 # Environment settings
-# MEM_SIZE = 50000 
-# MEM_SIZE_MIN = 1000 
+MEM_SIZE = 50000 
+MEM_SIZE_MIN = 1000 
 
-# # Learning settings
-# BATCH_SIZE = 64
-# LEARNING_RATE = 0.01
-# LEARN_DECAY = 0.99975 
-# LEARN_MIN = 0.001
-# DISCOUNT = 0.1 
+# Learning settings
+BATCH_SIZE = 64
+LEARNING_RATE = 0.01
+LEARN_DECAY = 0.99975 
+LEARN_MIN = 0.001
+DISCOUNT = 0.1 
 
-# # Exploration settings
-# EPSILON = 0.95
-# EPSILON_DECAY = 0.99975
-# EPSILON_MIN = 0.01
+# Exploration settings
+EPSILON = 0.95
+EPSILON_DECAY = 0.99975
+EPSILON_MIN = 0.01
 
-# # DQN settings
-# CONV_UNITS = 64 
-# UPDATE_TARGET_EVERY = 5
+# DQN settings
+CONV_UNITS = 64 
+UPDATE_TARGET_EVERY = 5
 
 # device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
