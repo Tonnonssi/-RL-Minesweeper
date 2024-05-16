@@ -235,7 +235,7 @@ class LimitedMinesweeperEnv(MinesweeperEnv):
         if train:
             self.board = self.total_boards[0]
         else:
-            self.board_iteration = iter(total_boards)
+            self.board_iteration = iter(self.total_boards)
             self.board = next(self.board_iteration)
 
     def reset(self):
@@ -245,8 +245,12 @@ class LimitedMinesweeperEnv(MinesweeperEnv):
         if self.train:
             self.board = random.choice(self.total_boards)
             self.board[0] = np.ones(shape=self.map_size) # board가 수정되기 때문에 초기화해줘야 한다.
-
         else:
-            self.board = next(self.board_iteration)
+            try:
+                self.board = next(self.board_iteration)
+            except StopIteration:
+                # Optionally: Reinitialize the iterator if you want to cycle through the boards
+                self.board_iteration = iter(self.total_boards)
+                self.board = next(self.board_iteration)
 
         self.state = self.create_state(self.board)
