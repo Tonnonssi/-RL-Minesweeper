@@ -158,7 +158,7 @@ class Trainer:
             ep_rewards.append(episode_reward)
             wins_list.append(reward == env.rewards['win'])
 
-        print(f"Valid n:{epoch}, Median progress: {np.median(progress_list):.2f}, Median reward: {np.median(ep_rewards):.2f}, Win rate : {np.sum(wins_list)/len(wins_list)}")
+        print(f"Valid n:{epoch}, Median progress: {np.median(progress_list):.2f}, Median reward: {np.median(ep_rewards):.3f}, Win rate : {np.sum(wins_list)/len(wins_list)}")
 
         return np.sum(wins_list)/len(wins_list) # 승률을 반환한다.
 
