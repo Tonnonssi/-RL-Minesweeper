@@ -82,33 +82,29 @@ class Agent:
         '''
         get_action은 하나의 state_img만을 받는다.
         '''
-        present_board = state.reshape(self.env.total_tiles) # flatten to get move idx
-        unsolved = [i for i,x in enumerate(present_board) if x == self.env.unrevealed]
-
         if np.random.random() < self.epsilon:
             # take random action
-            action = np.random.choice(unsolved)
+            action = np.random.choice(range(self.env.total_tiles))
 
         else:
             self.model.eval()
 
             with torch.no_grad():
                 state = torch.tensor(state.reshape(1,1,self.env.nrows,self.env.ncols),
-                                         dtype=torch.float32).to(device)
+                                     dtype=torch.float32).to(device)
                 total_action = self.model(state).view(-1)
                 total_action = total_action.cpu()
 
-                # 이미 오픈한 타일은 move 대상에서 제외된다.
-                total_action[present_board != self.env.unrevealed] = torch.min(total_action)
-
                 self.total_action = total_action
-
+                
                 action = torch.argmax(total_action).item()
 
         return action
 
     def train(self, done):
         if len(self.replay_memory) < self.mem_size_min:
+            # print(len(self.replay_memory))
+            # print("Not enough data")
             return
         
         # optimizer
@@ -128,18 +124,17 @@ class Agent:
         current_states = torch.tensor(np.array(current_states), dtype=torch.float32, device=device).reshape(-1,1,self.env.nrows,self.env.ncols)
         next_states = torch.tensor(np.array(next_states), dtype=torch.float32, device=device).reshape(-1,1,self.env.nrows,self.env.ncols)
 
-        action_batch = torch.tensor(batched_actions, device=device).reshape(1,-1) # reshape 안해주면 index로써 사용할 수 없다.
-        reward_batch = torch.tensor(batched_rewards, device=device).reshape(1,-1)
-        done_batch = torch.tensor(batched_dones, dtype=torch.float32, device=device).reshape(1,-1) # bool -> 0/1
+        action_batch = torch.tensor(batched_actions, device=device).reshape(-1,1) # reshape 안해주면 index로써 사용할 수 없다.
+        reward_batch = torch.tensor(batched_rewards, device=device).reshape(-1,1)
+        done_batch = torch.tensor(batched_dones, dtype=torch.float32, device=device).reshape(-1,1) # bool -> 0/1
 
         # Q(s,a) 값을 예측값으로 사용 - (batch, action_space.n)
         pred_q_values = self.model(current_states).gather(1, action_batch) # action idx의 데이터만 꺼냄
 
         # target 값 계산 : reward + gamma * Q(s',a')
         with torch.no_grad():
-            next_q_values = self.target_model(next_states).max(1).values
+            next_q_values = self.target_model(next_states).max(1).values.reshape(-1,1)
             target_q_values = reward_batch + (torch.ones(next_q_values.shape, device=device) - done_batch) * self.discount * next_q_values
-            target_q_values = target_q_values.reshape(1,-1)
 
         loss = self.loss_fn(pred_q_values, target_q_values)
 
