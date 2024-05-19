@@ -32,9 +32,11 @@ class Trainer:
 
         self.best_model_train = None
         self.best_model_valid = None
+        self.best_model_successed = None
 
         self.baseline_train = 0
         self.baseline_valid = 0
+        self.baseline_successed = 0
 
         self.simple_valid = 0
 
@@ -62,6 +64,7 @@ class Trainer:
 
         win_rate = 0
         valid_win_rate = 0
+        successed_win_rate = 0
 
         for episode in range(self.episodes):
             self.env.reset()
@@ -93,6 +96,10 @@ class Trainer:
                 self.env.render(self.env.state)
                 print(episode_reward)
 
+            # 승리한 모델 저장 
+            if reward == self.env.rewards['win']:
+                successed_state = self.agent.model.state_dict()
+
             self.progress_list.append(n_clicks)
             self.ep_rewards_list.append(episode_reward)
             self.wins_list.append(reward == self.env.rewards['win'])
@@ -110,14 +117,22 @@ class Trainer:
 
                     self.simple_valid = 10
 
-            if self.simple_valid > 0:
-                    valid_state = self.agent.model.state_dict()
-                    valid_win_rate = self.valid_model(self.env, self.tester_agent, episode, self.valid_sample, valid_state)
-                    self.simple_valid -= 1
+                    # 지난 구간의 승률이 baseline을 뛰어넘었을 때만 구간 중 승리한 모델을 점검한다. 
+                    print("valid latest successed model")
+                    successed_win_rate = self.valid_model(self.env, self.tester_agent, episode, self.valid_sample, successed_state)
 
-            if win_rate > self.baseline_valid:
-                self.baseline_valid = valid_win_rate
-                self.best_model_valid = self.agent.model.state_dict()
+                    if successed_win_rate > self.baseline_successed:
+                        self.best_model_successed = successed_state
+                        self.baseline_successed = successed_win_rate
+
+            if self.simple_valid > 0:
+                valid_state = self.agent.model.state_dict()
+                valid_win_rate = self.valid_model(self.env, self.tester_agent, episode, self.valid_sample, valid_state)
+                self.simple_valid -= 1
+
+                if valid_win_rate > self.baseline_valid:
+                    self.baseline_valid = valid_win_rate
+                    self.best_model_valid = self.agent.model.state_dict()
 
         print(round(time.time() - start, 2))
 
@@ -229,6 +244,7 @@ class Trainer:
         save_point['final_model'] = self.agent.model.state_dict()
         save_point['best_model_train'] = self.best_model_train
         save_point['best_model_valid'] = self.best_model_valid
+        save_point['best_model_successed'] = self.best_model_successed
 
         self.save_point = save_point
 
@@ -236,7 +252,7 @@ class Trainer:
         self.total_path = f_path + '/' + self.name
 
         create_file(f_path, self.name)
-        save_file(self.total_path, f'{len(self.progress_list)}epi_max_train{self.baseline_train}_valid{self.baseline_valid}',save_point)
+        save_file(self.total_path, f'{len(self.progress_list)}epi_max_train{self.baseline_train}_valid{self.baseline_valid}_success{self.baseline_successed}',save_point)
         print('모델이 저장되었습니다.')
 
 

@@ -44,8 +44,10 @@ class PerformTester:
 
 
         # palette for visualize
-        minesweeper_cmap = ['#FF00FF', '#FFFFFF', '#6A5ACD', '#0000FF', '#008000', '#FF0000',
-                    '#191970', '#A52A2A', '#7FFFD4', '#000000', '#C0C0C0']
+        minesweeper_cmap = ['#FF00FF', '#FFFFFF', '#6A5ACD', 
+                            '#0000FF', '#008000', '#FF0000',
+                            '#191970', '#A52A2A', '#7FFFD4', 
+                            '#000000', '#C0C0C0']
         self.minesweeper_palette = sns.color_palette(minesweeper_cmap)
 
     def test_model(self, n_episode, model_state):
@@ -84,7 +86,7 @@ class PerformTester:
         print(f"Test [n: {n_episode}], Median progress: {np.median(progress_list):.2f}, Median reward: {np.median(ep_rewards):.2f}, Win rate : {np.sum(wins_list)/len(wins_list)}")
 
     def visualize_single_step(self, df):
-        _, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 5))
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 5))
 
         sns.heatmap(df['current_state'].reshape(self.env.map_size)*8,
                     cmap=self.minesweeper_palette,

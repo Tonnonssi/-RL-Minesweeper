@@ -4,7 +4,8 @@ sys.path.append('/content/drive/My Drive/Minesweeper [RL]/codes')
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import copy
+import copy 
+
 import random 
 import numpy as np
 from collections import deque
@@ -69,6 +70,9 @@ class Agent:
         self.model.to(device)
         self.target_model.to(device)
 
+        # optimizer
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
+
         # replay memory
         self.replay_memory = deque(maxlen=self.mem_size)
 
@@ -103,46 +107,44 @@ class Agent:
 
     def train(self, done):
         if len(self.replay_memory) < self.mem_size_min:
-            # print(len(self.replay_memory))
-            # print("Not enough data")
             return
-        
-        # optimizer
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
+
+        # 리플레이 메모리에서 배치 사이즈만큼 데이터를 꺼낸다.
+        # batch[i] = (current_state, action, reward, new_current_state, done)
+        batch = random.sample(self.replay_memory, self.batch_size)
+
+        # 배치 안에 저장되어 있는 정보 꺼내기
+        current_states, actions, rewards, next_states, epi_dones = zip(*batch)
+
+        current_states =  torch.tensor(np.array(current_states), dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
+        next_states = torch.tensor(np.array(next_states), dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
+
+        actions = torch.tensor(np.array(actions), dtype=torch.int).to(device)
+        rewards = torch.tensor(np.array(rewards), dtype=torch.float).reshape(-1,1).to(device)
+        epi_dones = torch.tensor(np.array(epi_dones), dtype=torch.float).reshape(-1,1).to(device)
 
         self.model.train()
         self.target_model.eval()
 
-        # 리플레이 메모리에서 배치 사이즈만큼 데이터를 꺼낸다.
-        # batch[i] = (current_state, action, reward, next_state, done)
-        batch = random.sample(self.replay_memory, self.batch_size)
+        current_q_values = self.model(current_states)
 
-        # 배치 안에 저장되어 있는 정보 꺼내기
-        current_states, batched_actions, batched_rewards, next_states, batched_dones = zip(*batch)
-
-        # state 정의
-        current_states = torch.tensor(np.array(current_states), dtype=torch.float32, device=device).reshape(-1,1,self.env.nrows,self.env.ncols)
-        next_states = torch.tensor(np.array(next_states), dtype=torch.float32, device=device).reshape(-1,1,self.env.nrows,self.env.ncols)
-
-        action_batch = torch.tensor(batched_actions, device=device).reshape(-1,1) # reshape 안해주면 index로써 사용할 수 없다.
-        reward_batch = torch.tensor(batched_rewards, device=device).reshape(-1,1)
-        done_batch = torch.tensor(batched_dones, dtype=torch.float32, device=device).reshape(-1,1) # bool -> 0/1
-
-        # Q(s,a) 값을 예측값으로 사용 - (batch, action_space.n)
-        pred_q_values = self.model(current_states).gather(1, action_batch) # action idx의 데이터만 꺼냄
-
-        # target 값 계산 : reward + gamma * Q(s',a')
         with torch.no_grad():
-            next_q_values = self.target_model(next_states).max(1).values.reshape(-1,1)
-            target_q_values = reward_batch + (torch.ones(next_q_values.shape, device=device) - done_batch) * self.discount * next_q_values
+            next_q_values = self.target_model(next_states)
 
-        loss = self.loss_fn(pred_q_values, target_q_values)
+        target_value = rewards + (1 - epi_dones) * self.discount * torch.max(next_q_values, dim=1)[0].reshape(-1,1)
+        target_value = target_value.flatten()
 
-        running_loss = loss.item()
+        target_q_values = copy.deepcopy(current_q_values.detach())
+        target_q_values[range(BATCH_SIZE), actions] = target_value
+
+        cost = self.loss_fn(current_q_values, target_q_values)
+
+        running_loss = cost.item()
+
         self.losses.append(round(running_loss,6))
 
         self.optimizer.zero_grad()
-        loss.backward()
+        cost.backward()
         self.optimizer.step()
 
         if done:
@@ -158,6 +160,7 @@ class Agent:
         # decay epsilon
         self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
 
+
 class Limited18Agent(Agent):
     def __init__(self, env, net, replay_memory=False, **kwargs):
         super().__init__(env, net, **kwargs)
@@ -170,7 +173,6 @@ class Limited18Agent(Agent):
 
         if np.sum(current_state != self.env.unrevealed) >= 18: # 경험적인 데이터 18(나름 하이퍼파라미터긴 함ㅋ)
             self.replay_memory.append(transition)
-
 
 
 # agent = Agent(env, 
