@@ -46,7 +46,7 @@ class BasicBlock(nn.Module):
         return out
     
 class Net(nn.Module):
-    def __init__(self, input_dims, n_actions, conv_units):
+    def __init__(self, input_dims, n_actions, conv_units, NUM_RESIDUAL_BLOCKS=10):
         super().__init__()
 
         self.down_sample = nn.Sequential(
