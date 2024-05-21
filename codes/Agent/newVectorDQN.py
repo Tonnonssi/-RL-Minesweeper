@@ -70,8 +70,9 @@ class Agent:
         self.model.to(device)
         self.target_model.to(device)
 
-        # optimizer
+        # optimizer and scheduler
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100000, gamma = self.learn_decay)
 
         # replay memory
         self.replay_memory = deque(maxlen=self.mem_size)
@@ -149,13 +150,11 @@ class Agent:
 
         if done:
             self.target_update_counter += 1
+            self.scheduler.step()
 
         if self.target_update_counter == self.update_target_baseline:
             self.update_target_model()
             self.target_update_counter = 0
-
-        # decay learning rate
-        self.learning_rate = max(self.learn_min, self.learning_rate*self.learn_decay)
 
         # decay epsilon
         self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
