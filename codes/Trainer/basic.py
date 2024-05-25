@@ -13,7 +13,7 @@ TRAIN_RENDER = False
 
 TRAIN_TIMESTEPS = ['every timestep', 'every episodes']
 TRAIN_TIMESTEP = TRAIN_TIMESTEPS[0]
-VIUSAL_INTERVAL = 100
+VISUAL_INTERVAL = 100
 
 VALID_SAMPLE = 1000
 VALID_INTERVAL = 10
@@ -50,7 +50,7 @@ class Trainer:
         self.valid_sample = kwargs.get("VALID_SAMPLE")
         self.valid_interval = kwargs.get("VALID_INTERVAL")
 
-        self.visual_interval = kwargs.get("VIUSAL_INTERVAL")
+        self.visual_interval = kwargs.get("VISUAL_INTERVAL") if kwargs.get("VISUAL_INTERVAL") is not None else self.print_interval
         self.interval = 500
 
         if train_start:
@@ -96,20 +96,20 @@ class Trainer:
                 self.env.render(self.env.state)
                 print(episode_reward)
 
-            # 승리한 모델 저장 
-            if reward == self.env.rewards['win']:
-                successed_state = self.agent.model.state_dict()
-
             self.progress_list.append(n_clicks)
             self.ep_rewards_list.append(episode_reward)
             self.wins_list.append(reward == self.env.rewards['win'])
+
+            # 승리한 모델 저장 
+            if reward == self.env.rewards['win']:
+                successed_state = self.agent.model.state_dict()
 
             if (episode+1) % self.print_interval == 0:
                 med_progress = np.median(self.progress_list[-self.print_interval:])
                 win_rate = np.sum(self.wins_list[-self.print_interval:]) / self.print_interval
                 med_reward = np.median(self.ep_rewards_list[-self.print_interval:])
 
-                print(f"Episode: [{self.episodes}/{episode+1}], Median progress: {med_progress:.2f}, Median reward: {med_reward:.2f}, Win rate : {win_rate:.3f}, Epsilon: {self.agent.epsilon:.2f}")
+                print(f"Episode: [{self.episodes}/{episode+1}]| Median progress: {med_progress:.2f} | Median reward: {med_reward:.2f} | Win rate : {win_rate:.3f} | Epsilon: {self.agent.epsilon:.2f}")
 
                 if win_rate > self.baseline_train:
                     self.baseline_train = win_rate
@@ -158,7 +158,7 @@ class Trainer:
 
                 action = agent.get_action(current_state)
 
-                _, reward, done = env.step(action)
+                next_state, reward, done = env.step(action)
 
                 episode_reward += reward
                 n_clicks += 1
@@ -252,8 +252,9 @@ class Trainer:
         self.total_path = f_path + '/' + self.name
 
         create_file(f_path, self.name)
-        save_file(self.total_path, f'{len(self.progress_list)}epi_max_train{self.baseline_train}_valid{self.baseline_valid}_success{self.baseline_successed}',save_point)
+        save_file(self.total_path, f'{len(self.progress_list)}epi_train : {self.baseline_train} | valid : {self.baseline_valid} | success : {self.baseline_successed}',save_point)
         print('모델이 저장되었습니다.')
+
 
 
 #  if __name__ == "__main__":
@@ -266,6 +267,6 @@ class Trainer:
 #                       PRINT_INTERVAL = PRINT_INTERVAL,
 #                       TRAIN_RENDER = TRAIN_RENDER,
 #                       TRAIN_TIMESTEP = TRAIN_TIMESTEPS[0],
-#                       VIUSAL_INTERVAL = VIUSAL_INTERVAL,
+#                       VISUAL_INTERVAL = VISUAL_INTERVAL,
 #                       VALID_SAMPLE = VALID_SAMPLE,
 #                       VALID_INTERVAL = VALID_INTERVAL)

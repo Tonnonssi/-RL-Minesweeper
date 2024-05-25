@@ -50,7 +50,7 @@ class Trainer:
         self.valid_sample = kwargs.get("VALID_SAMPLE")
         self.valid_interval = kwargs.get("VALID_INTERVAL")
 
-        self.visual_interval = kwargs.get("VISUAL_INTERVAL") if kwargs.get("VIUSAL_INTERVAL") is not None else self.print_interva
+        self.visual_interval = kwargs.get("VISUAL_INTERVAL") if kwargs.get("VISUAL_INTERVAL") is not None else self.print_interval
         self.interval = 500
 
         if train_start:
@@ -109,7 +109,7 @@ class Trainer:
                 win_rate = np.sum(self.wins_list[-self.print_interval:]) / self.print_interval
                 med_reward = np.median(self.ep_rewards_list[-self.print_interval:])
 
-                print(f"Episode: [{self.episodes}/{episode+1}], Median progress: {med_progress:.2f}, Median reward: {med_reward:.2f}, Win rate : {win_rate:.3f}, Epsilon: {self.agent.epsilon:.2f}")
+                print(f"Episode: [{self.episodes}/{episode+1}]| Median progress: {med_progress:.2f} | Median reward: {med_reward:.2f} | Win rate : {win_rate:.3f} | Epsilon: {self.agent.epsilon:.2f}")
 
                 if win_rate > self.baseline_train:
                     self.baseline_train = win_rate
@@ -255,8 +255,9 @@ class Trainer:
         self.total_path = f_path + '/' + self.name
 
         create_file(f_path, self.name)
-        save_file(self.total_path, f'{len(self.progress_list)}epi_max_train{self.baseline_train}_valid{self.baseline_valid}_success{self.baseline_successed}',save_point)
+        save_file(self.total_path, f'{len(self.progress_list)}epi_train : {self.baseline_train} | valid : {self.baseline_valid} | success : {self.baseline_successed}',save_point)
         print('모델이 저장되었습니다.')
+
 
 
 #  if __name__ == "__main__":
@@ -269,6 +270,6 @@ class Trainer:
 #                       PRINT_INTERVAL = PRINT_INTERVAL,
 #                       TRAIN_RENDER = TRAIN_RENDER,
 #                       TRAIN_TIMESTEP = TRAIN_TIMESTEPS[0],
-#                       VIUSAL_INTERVAL = VIUSAL_INTERVAL,
+#                       VISUAL_INTERVAL = VISUAL_INTERVAL,
 #                       VALID_SAMPLE = VALID_SAMPLE,
 #                       VALID_INTERVAL = VALID_INTERVAL)
