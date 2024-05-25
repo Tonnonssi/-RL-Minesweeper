@@ -19,6 +19,7 @@ BATCH_SIZE = 64
 LEARNING_RATE = 0.01
 LEARN_DECAY = 0.99975 
 LEARN_MIN = 0.001
+LEARN_EPOCH = 50000
 DISCOUNT = 0.1 
 
 # Exploration settings
@@ -45,7 +46,8 @@ class Agent:
         self.batch_size = kwargs.get("BATCH_SIZE")
         self.learning_rate = kwargs.get("LEARNING_RATE")
         self.learn_decay = kwargs.get("LEARN_DECAY")
-        self.learn_min = kwargs.get("LEARN_MIN")
+        self.learn_epoch = kwargs.get("LEARN_EPOCH")
+        # self.learn_min = kwargs.get("LEARN_MIN")
         self.discount = kwargs.get("DISCOUNT")
 
         # Exploration Settings
@@ -72,7 +74,7 @@ class Agent:
 
         # optimizer and scheduler
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100000, gamma = self.learn_decay)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=self.learn_epoch, gamma = self.learn_decay)
 
         # replay memory
         self.replay_memory = deque(maxlen=self.mem_size)
