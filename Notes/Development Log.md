@@ -171,4 +171,10 @@ resnet을 테스트할 때 bias를 끈 상태에서 학습이 이뤄져서 기�
     https://github.com/sdlee94/Minesweeper-AI-Reinforcement-Learning
 2. CNN 아이디어를 얻은 레퍼런스  
     https://github.com/AlexMGitHub/Minesweeper-DDQN
-3.
+3. 추측없이 풀 수 있는 지뢰찾기도 존재  
+    https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/mines.html#30x16n99%23307367410844595
+    - 미리 깰 수 있는 판을 다 찾아둔 다음에 랜덤으로 판을 뿌리는 것 같기는 하다. 
+4. 추측없이 풀 수 있는 지뢰찾기 / 랜덤으로 지뢰 뿌리기 둘 다 구현되어 있는 지뢰찾기 사이트
+    https://minesweeper.online/ko/game/3380965553
+5. rule-base 알고리즘이 설명되어 있음  
+    https://www.sciencedirect.com/science/article/pii/S0950705122002842
