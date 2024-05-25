@@ -103,8 +103,6 @@ class Agent:
 
     def train(self, done):
         if len(self.replay_memory) < self.mem_size_min:
-            # print(len(self.replay_memory))
-            # print("Not enough data")
             return
         
         # optimizer
