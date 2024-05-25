@@ -13,7 +13,7 @@ TRAIN_RENDER = False
 
 TRAIN_TIMESTEPS = ['every timestep', 'every episodes']
 TRAIN_TIMESTEP = TRAIN_TIMESTEPS[0]
-VIUSAL_INTERVAL = 100
+VISUAL_INTERVAL = 100
 
 VALID_SAMPLE = 1000
 VALID_INTERVAL = 10
@@ -50,7 +50,7 @@ class Trainer:
         self.valid_sample = kwargs.get("VALID_SAMPLE")
         self.valid_interval = kwargs.get("VALID_INTERVAL")
 
-        self.visual_interval = kwargs.get("VIUSAL_INTERVAL")
+        self.visual_interval = kwargs.get("VISUAL_INTERVAL") if kwargs.get("VIUSAL_INTERVAL") is not None else self.print_interva
         self.interval = 500
 
         if train_start:
