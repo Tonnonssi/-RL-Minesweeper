@@ -4,7 +4,8 @@ sys.path.append('/content/drive/My Drive/Minesweeper [RL]/codes')
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import copy
+import copy 
+
 import random 
 import numpy as np
 from collections import deque
@@ -18,6 +19,7 @@ BATCH_SIZE = 64
 LEARNING_RATE = 0.01
 LEARN_DECAY = 0.99975 
 LEARN_MIN = 0.001
+LEARN_EPOCH = 50000
 DISCOUNT = 0.1 
 
 # Exploration settings
@@ -32,7 +34,6 @@ UPDATE_TARGET_EVERY = 5
 # device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# class 
 class Agent:
     def __init__(self, env, net, **kwargs):
         self.env = env
@@ -45,7 +46,8 @@ class Agent:
         self.batch_size = kwargs.get("BATCH_SIZE")
         self.learning_rate = kwargs.get("LEARNING_RATE")
         self.learn_decay = kwargs.get("LEARN_DECAY")
-        self.learn_min = kwargs.get("LEARN_MIN")
+        self.learn_epoch = kwargs.get("LEARN_EPOCH")
+        # self.learn_min = kwargs.get("LEARN_MIN")
         self.discount = kwargs.get("DISCOUNT")
 
         # Exploration Settings
@@ -70,8 +72,9 @@ class Agent:
         self.model.to(device)
         self.target_model.to(device)
 
-        # optimizer
+        # optimizer and scheduler
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=self.learn_epoch, gamma = self.learn_decay)
 
         # replay memory
         self.replay_memory = deque(maxlen=self.mem_size)
@@ -156,16 +159,15 @@ class Agent:
 
         if done:
             self.target_update_counter += 1
+            self.scheduler.step()
 
         if self.target_update_counter == self.update_target_baseline:
             self.update_target_model()
             self.target_update_counter = 0
 
-        # decay learning rate
-        self.learning_rate = max(self.learn_min, self.learning_rate*self.learn_decay)
-
         # decay epsilon
         self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+
 
 class Limited18Agent(Agent):
     def __init__(self, env, net, replay_memory=False, **kwargs):
