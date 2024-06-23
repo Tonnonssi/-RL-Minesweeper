@@ -134,7 +134,7 @@ class MinesweeperEnv:
                             seen.add((row, col))
                             queue.append((row, col))
 
-                            self.board[0][row, col] = 0
+                            self.board[0][row, col] = 0 # 아마 필요없을 것 
 
     def reset(self):
         # 지뢰찾기 판 생성
@@ -254,3 +254,4 @@ class LimitedMinesweeperEnv(MinesweeperEnv):
                 self.board = next(self.board_iteration)
 
         self.state = self.create_state(self.board)
+

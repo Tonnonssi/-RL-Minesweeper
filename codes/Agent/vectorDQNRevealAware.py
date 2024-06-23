@@ -4,7 +4,8 @@ sys.path.append('/content/drive/My Drive/Minesweeper [RL]/codes')
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import copy
+import copy 
+
 import random 
 import numpy as np
 from collections import deque
@@ -18,6 +19,7 @@ BATCH_SIZE = 64
 LEARNING_RATE = 0.01
 LEARN_DECAY = 0.99975 
 LEARN_MIN = 0.001
+LEARN_EPOCH = 50000
 DISCOUNT = 0.1 
 
 # Exploration settings
@@ -32,7 +34,6 @@ UPDATE_TARGET_EVERY = 5
 # device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# class 
 class Agent:
     def __init__(self, env, net, **kwargs):
         self.env = env
@@ -45,7 +46,8 @@ class Agent:
         self.batch_size = kwargs.get("BATCH_SIZE")
         self.learning_rate = kwargs.get("LEARNING_RATE")
         self.learn_decay = kwargs.get("LEARN_DECAY")
-        self.learn_min = kwargs.get("LEARN_MIN")
+        self.learn_epoch = kwargs.get("LEARN_EPOCH")
+        # self.learn_min = kwargs.get("LEARN_MIN")
         self.discount = kwargs.get("DISCOUNT")
 
         # Exploration Settings
@@ -69,6 +71,10 @@ class Agent:
 
         self.model.to(device)
         self.target_model.to(device)
+
+        # optimizer and scheduler
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=self.learn_epoch, gamma = self.learn_decay)
 
         # replay memory
         self.replay_memory = deque(maxlen=self.mem_size)
@@ -112,47 +118,39 @@ class Agent:
     def train(self, done):
         if len(self.replay_memory) < self.mem_size_min:
             return
-        # optimizer
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, eps=1e-4)
 
         # 리플레이 메모리에서 배치 사이즈만큼 데이터를 꺼낸다.
         # batch[i] = (current_state, action, reward, new_current_state, done)
         batch = random.sample(self.replay_memory, self.batch_size)
 
         # 배치 안에 저장되어 있는 정보 꺼내기
-        current_states, _, _, next_states, _ = zip(*batch)
+        current_states, actions, rewards, next_states, epi_dones = zip(*batch)
 
         current_states =  torch.tensor(np.array(current_states), dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
         next_states = torch.tensor(np.array(next_states), dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
 
-        self.model.eval()
+        actions = torch.tensor(np.array(actions), dtype=torch.int).to(device)
+        rewards = torch.tensor(np.array(rewards), dtype=torch.float).reshape(-1,1).to(device)
+        epi_dones = torch.tensor(np.array(epi_dones), dtype=torch.float).reshape(-1,1).to(device)
+
+        self.model.train()
         self.target_model.eval()
 
+        current_q_values = self.model(current_states)
+
         with torch.no_grad():
-            current_q_values = self.model(current_states).reshape(-1,self.env.total_tiles).cpu().detach().tolist()
-            next_q_values = self.target_model(next_states).cpu().detach().numpy()
+            next_q_values = self.target_model(next_states)
 
-        #  current_q_values를 target value가 되도록 업데이트하는 코드
-        for index, (_, action, reward, _, epi_done) in enumerate(batch):
-            if not epi_done:
-                max_future_q = np.max(next_q_values[index])
-                new_q = reward + self.discount * max_future_q
-            else:
-                new_q = reward
+        target_value = rewards + (1 - epi_dones) * self.discount * torch.max(next_q_values, dim=1)[0].reshape(-1,1)
+        target_value = target_value.flatten()
 
-            current_q_values[index][action] = new_q
+        target_q_values = copy.deepcopy(current_q_values.detach())
+        target_q_values[range(BATCH_SIZE), actions] = target_value
 
-        # train model
-        self.model.train()
-
-        x = current_states.to(device)
-        y = torch.tensor(np.array(current_q_values), dtype=torch.float32).to(device)
-
-        y_est = self.model(x)
-
-        cost = self.loss_fn(y_est, y)
+        cost = self.loss_fn(current_q_values, target_q_values)
 
         running_loss = cost.item()
+
         self.losses.append(round(running_loss,6))
 
         self.optimizer.zero_grad()
@@ -161,16 +159,15 @@ class Agent:
 
         if done:
             self.target_update_counter += 1
+            self.scheduler.step()
 
         if self.target_update_counter == self.update_target_baseline:
             self.update_target_model()
             self.target_update_counter = 0
 
-        # decay learning rate
-        self.learning_rate = max(self.learn_min, self.learning_rate*self.learn_decay)
-
         # decay epsilon
         self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+
 
 class Limited18Agent(Agent):
     def __init__(self, env, net, replay_memory=False, **kwargs):

@@ -8,15 +8,13 @@ const gameBoard =
         "gameBoard"
     );
 let board = [];
+console.log(Array.isArray(board));
  
 function initializeBoard() {
+    // init board 
     for (let i = 0; i < numRows; i++) {
         board[i] = [];
-        for (
-            let j = 0;
-            j < numCols;
-            j++
-        ) {
+        for (let j = 0; j < numCols; j++) {
             board[i][j] = {
                 isMine: false,
                 revealed: false,
@@ -35,53 +33,28 @@ function initializeBoard() {
             Math.random() * numCols
         );
         if (!board[row][col].isMine) {
-            board[row][
-                col
-            ].isMine = true;
+            board[row][col].isMine = true;
             minesPlaced++;
         }
     }
  
     // Calculate counts
     for (let i = 0; i < numRows; i++) {
-        for (
-            let j = 0;
-            j < numCols;
-            j++
-        ) {
+        for (let j = 0; j < numCols; j++) {
             if (!board[i][j].isMine) {
                 let count = 0;
-                for (
-                    let dx = -1;
-                    dx <= 1;
-                    dx++
-                ) {
-                    for (
-                        let dy = -1;
-                        dy <= 1;
-                        dy++
-                    ) {
-                        const ni =
-                            i + dx;
-                        const nj =
-                            j + dy;
-                        if (
-                            ni >= 0 &&
-                            ni <
-                                numRows &&
-                            nj >= 0 &&
-                            nj <
-                                numCols &&
-                            board[ni][
-                                nj
-                            ].isMine
-                        ) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        const ni = i + dx;
+                        const nj = j + dy;
+                        if (ni >= 0 && ni < numRows &&
+                            nj >= 0 && nj < numCols &&
+                            board[ni][nj].isMine) {
                             count++;
                         }
                     }
                 }
-                board[i][j].count =
-                    count;
+                board[i][j].count = count;
             }
         }
     }
@@ -135,36 +108,21 @@ function renderBoard() {
     gameBoard.innerHTML = "";
  
     for (let i = 0; i < numRows; i++) {
-        for (
-            let j = 0;
-            j < numCols;
-            j++
+        for (let j = 0; j < numCols; j++
         ) {
-            const cell =
-                document.createElement(
-                    "div"
-                );
-            cell.className = "cell";
+            const cell = document.createElement("div"); // <div>를 추가한 것 
+
+            cell.className = "cell"; // css 속성을 부여하는 것 
+
             if (board[i][j].revealed) {
-                cell.classList.add(
-                    "revealed"
-                );
-                if (
-                    board[i][j].isMine
-                ) {
-                    cell.classList.add(
-                        "mine"
-                    );
-                    cell.textContent =
-                        "????";
-                } else if (
-                    board[i][j].count >
-                    0
-                ) {
-                    cell.textContent =
-                        board[i][
-                            j
-                        ].count;
+                cell.classList.add("revealed");
+
+                if (board[i][j].isMine) {
+                    cell.classList.add("mine");
+                    cell.textContent = "M";
+
+                } else if (board[i][j].count > 0) {
+                    cell.textContent = board[i][j].count;
                 }
             }
             cell.addEventListener(
