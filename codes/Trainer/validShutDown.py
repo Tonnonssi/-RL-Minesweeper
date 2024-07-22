@@ -28,6 +28,8 @@ class Trainer:
         self.ep_rewards_list = []
 
         self.name = name
+        self.f_path = '/content/drive/MyDrive/Minesweeper [RL]/models'
+        self.total_path = self.f_path + '/' + self.name
         self.tester_agent = tester_agent
 
         self.best_model_train = None
@@ -251,10 +253,7 @@ class Trainer:
 
         self.save_point = save_point
 
-        f_path = '/content/drive/MyDrive/Minesweeper [RL]/models'
-        self.total_path = f_path + '/' + self.name
-
-        create_file(f_path, self.name)
+        create_file(self.f_path, self.name)
         save_file(self.total_path, f'{len(self.progress_list)}epi_train : {self.baseline_train} | valid : {self.baseline_valid} | success : {self.baseline_successed}',save_point)
         print('모델이 저장되었습니다.')
 
