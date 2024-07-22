@@ -1,4 +1,5 @@
 ## [RL] MineSweeper
+<<<<<<< HEAD
 ## 00. Overview 
 ![Jupyter Notebook](https://img.shields.io/badge/jupyter-%23FA0F00.svg?style=for-the-badge&logo=jupyter&logoColor=white)
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91.svg?style=for-the-badge&logo=visual-studio&logoColor=white)
@@ -180,3 +181,5 @@ Guess 없이도 80%가 넘는 승률을 보여주었지만, Guess에 Progress보
 
 ## Reference
 
+=======
+>>>>>>> b258451f028e3099e0bf9dcc2d6763bafc1b08bd
