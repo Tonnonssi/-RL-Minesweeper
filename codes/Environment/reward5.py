@@ -13,14 +13,19 @@ class MinesweeperEnv:
     def __init__(self, 
                  map_size, 
                  n_mines, 
-                 rewards={'win':1, 'lose':-1, 'progress':0.3, 'guess':-0.3, 'no_progress' : -0.3}, 
-                 dones={'win':True, 'lose':True, 'progress':False, 'guess':False, 'no_progress' : False}):
+                 rewards={'win':1, 'lose':-1, 'progress':0.3, 'guess':0.3, 'no_progress' : -1}, 
+                 dones={'win':True, 'lose':True, 'progress':False, 'guess':False, 'no_progress' : False},
+                 dim2=True):
         
         # 지뢰찾기 맵에 대한 기본 정보
         self.map_size = map_size
         self.nrows, self.ncols = map_size
         self.total_tiles = self.nrows*self.ncols # n_tiles에서 변경함
-        self.total_mines = n_mines
+        self.total_mines = n_mines # action_space
+        self.dim2 = dim2
+
+        # state type에 따라 달라지는 channel의 수 
+        self.n_channel = 1 if self.dim2 else 11
 
         # 학습을 위한 정보
         self.rewards = rewards
@@ -69,27 +74,37 @@ class MinesweeperEnv:
         board[1] = actual_board
 
         return board
+    
+    def create_3dim_state(state, map_size):
+        new_state = np.zeros((11, *map_size))
+
+        for i in range(-2,9):
+            new_state[i] = (state == i).astype(float)
+
+        return new_state
 
     def create_state(self, board):
         revealed_mask = board[0]
         actual_board = copy.deepcopy(board[1])
 
-        # trainable한 형태로 변환
+        # Convert 'M' mines to numerical representation
         actual_board[actual_board == "M"] = -2
 
-        masked_state = np.ma.masked_array(actual_board,revealed_mask)
-        masked_state = masked_state.filled(-1) # -1은 unrevealed를 의미한다.
+        masked_state = np.ma.masked_array(actual_board, revealed_mask)
+        masked_state = masked_state.filled(-1)  # -1 represents unrevealed.
 
-        scaled_state = masked_state / 8
-        scaled_state = scaled_state.astype(np.float16)
+        if self.dim2:
+            scaled_state = masked_state / 8
+            scaled_state = scaled_state.astype(np.float16)
+        else:
+            masked_state = masked_state.astype(np.float16)
+            scaled_state = MinesweeperEnv.create_3dim_state(masked_state, self.map_size)
 
         return scaled_state
 
     def get_coord(self, action_idx):
         # 선택한 action을 더 가시적이게 나타내기 위해
-
-        x = action_idx // self.ncols
-        y = action_idx % self.ncols
+        x, y = divmod(action_idx, self.ncols)
 
         return (x, y)
 
@@ -180,10 +195,22 @@ class MinesweeperEnv:
                 done = self.dones['progress']
 
         return self.state, reward, done
+    
+    def restore_to_2dim(self, state):
+        constant = np.array(list(range(9)) + [-2, -1])
+        state = copy.deepcopy(state)
 
+        restored_state = state * constant[:, None, None]
+        restored_state = np.sum(restored_state, axis=0).astype(int)
+        return restored_state
+    
     def render(self, state):
         # 원래 값으로 복구한 뒤 시각화한다.
-        state = (state * 8.0).astype(np.int8)
+        if self.dim2:
+            state = (state * 8.0).astype(np.int8)
+        else:
+            state = self.restore_to_2dim(state)
+
         state = state.astype(object)
         state[state == -1] = '.'
         state[state == -2] = 'M'

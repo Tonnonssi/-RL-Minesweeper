@@ -1,9 +1,13 @@
+palette <- c("random"="#FF3366",
+             "vertex"="#6699FF")
+
 df = read.csv("/Users/jimin/Library/CloudStorage/GoogleDrive-tonnonssi@gmail.com/My Drive/Minesweeper [RL]/firstReveal.csv")
 
-df = df[-c(1,3)] # 필요없는 열 삭제 
+df = df[-c(1)] # 필요없는 열 삭제 
 
+head(df)
 df_long <- df %>% 
-    pivot_longer(cols = c(vertex, radom), names_to = "variable", values_to = "value")
+    pivot_longer(cols = c(vertex, random), names_to = "variable", values_to = "value")
 
 # x를 범주형 데이터로 변환
 df_long$X <- as.factor(df_long$X)
@@ -25,5 +29,6 @@ ggplot(df_long, aes(x = variable, y = value)) +
     geom_hline(yintercept = 81, linetype = "dashed") +  # y = 81 수평선
     geom_text(data = medians, aes(x = variable, label = median, y = median), vjust = -0.5) +  # 중앙값 텍스트
     theme_minimal() +
-    labs(x = "Type", y = "Count", title = "Number of Cells Revealed by Selecting the First Tile: Comparison of Vertex and Random Methods")
+    labs(x = "Type", y = "Count", title = "Number of Cells Revealed by Selecting the First Tile: Comparison of Vertex and Random Methods") + 
+    scale_fill_manual(values=palette)
  

@@ -38,6 +38,9 @@ class Agent:
     def __init__(self, env, net, **kwargs):
         self.env = env
 
+        # state type에 따라 달라지는 channel의 수 
+        self.n_channel = self.env.n_channel
+
         # Environment Settings
         self.mem_size = kwargs.get("MEM_SIZE")
         self.mem_size_min = kwargs.get("MEM_SIZE_MIN")
@@ -67,7 +70,7 @@ class Agent:
         self.model = copy.deepcopy(net)
         self.target_model = copy.deepcopy(net)
 
-        self.target_model.load_state_dict(self.model.state_dict())
+        self.update_target_model()
 
         self.model.to(device)
         self.target_model.to(device)
@@ -97,7 +100,7 @@ class Agent:
             self.model.eval()
 
             with torch.no_grad():
-                state = torch.tensor(state.reshape(1,1,self.env.nrows,self.env.ncols),
+                state = torch.tensor(state.reshape(1,self.n_channel,self.env.nrows,self.env.ncols),
                                      dtype=torch.float32).to(device)
                 total_action = self.model(state).view(-1)
                 total_action = total_action.cpu()
@@ -119,8 +122,8 @@ class Agent:
         # 배치 안에 저장되어 있는 정보 꺼내기
         current_states, actions, rewards, next_states, epi_dones = zip(*batch)
 
-        current_states =  torch.tensor(np.array(current_states), dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
-        next_states = torch.tensor(np.array(next_states), dtype=torch.float32).reshape(-1,1,self.env.nrows,self.env.ncols).to(device)
+        current_states =  torch.tensor(np.array(current_states), dtype=torch.float32).reshape(-1,self.n_channel,self.env.nrows,self.env.ncols).to(device)
+        next_states = torch.tensor(np.array(next_states), dtype=torch.float32).reshape(-1,self.n_channel,self.env.nrows,self.env.ncols).to(device)
 
         actions = torch.tensor(np.array(actions), dtype=torch.int).to(device)
         rewards = torch.tensor(np.array(rewards), dtype=torch.float).reshape(-1,1).to(device)

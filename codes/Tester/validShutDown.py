@@ -85,10 +85,20 @@ class PerformTester:
 
         print(f"Test [n: {n_episode}], Median progress: {np.median(progress_list):.2f}, Median reward: {np.median(ep_rewards):.2f}, Win rate : {np.sum(wins_list)/len(wins_list)}")
 
-    def visualize_single_step(self, df):
+        return np.sum(wins_list)/len(wins_list)
+
+    def visualize_single_step(self, df, min_max_scaling=True):
         fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 5))
 
-        sns.heatmap(df['current_state'].reshape(self.env.map_size)*8,
+        if self.env.dim2:
+            current_state = df['current_state'].reshape(self.env.map_size)*8
+            next_state = df['next_state'].reshape(self.env.map_size)*8
+        else:
+            current_state = self.env.restore_to_2dim(df['current_state'])
+            next_state = self.env.restore_to_2dim(df['next_state'])
+
+
+        sns.heatmap(current_state,
                     cmap=self.minesweeper_palette,
                     annot=True,
                     linewidth=.5,
@@ -97,7 +107,7 @@ class PerformTester:
                     vmax=8,
                     ax=ax1)
 
-        sns.heatmap(df['next_state'].reshape(self.env.map_size)*8,
+        sns.heatmap(next_state,
                     cmap=self.minesweeper_palette,
                     annot=True,
                     linewidth=.5,
@@ -107,9 +117,13 @@ class PerformTester:
                     ax=ax2)
 
         # scaling Q-table
-        min_value = np.min(df['Qtable'])
-        max_value = np.max(df['Qtable'])
-        q_table = (df['Qtable'] - min_value) / (max_value - min_value)
+        if min_max_scaling:
+            min_value = np.min(df['Qtable'])
+            max_value = np.max(df['Qtable'])
+            q_table = (df['Qtable'] - min_value) / (max_value - min_value)
+
+        else:
+            q_table = df['Qtable']
 
         sns.heatmap(q_table,
                     cmap='PuBuGn',
@@ -136,18 +150,19 @@ class PerformTester:
         epi_df.apply(lambda x: self.render(x['next_state'], x['action']), axis=1)
 
     def render(self, state, action):
-        # 원래 값으로 복구한 뒤 시각화한다.
 
         def fill_clicked_coord(x, color):
             color = f'background-color:{color}'
             return color
 
-        def get_coord(action):
-            return (action // self.env.nrows, action % self.env.nrows)
+        coord = divmod(action, self.env.nrows) # get_coord
 
-        coord = get_coord(action)
+        # 원래 값으로 복구한 뒤 시각화한다.
+        if self.env.dim2:
+            state = (state * 8.0).astype(np.int8)
+        else:
+            state = self.env.restore_to_2dim(state)
 
-        state = (state * 8.0).astype(np.int8)
         state = state.astype(object)
         state[state == -1] = '.'
         state[state == -2] = 'M'
