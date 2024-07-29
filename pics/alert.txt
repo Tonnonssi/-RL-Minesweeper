@@ -1,0 +1,3 @@
+README에서 사용하지 않은 사진들이 섞여 있습니다. 
+
+There are pictures not used in the README mixed in.

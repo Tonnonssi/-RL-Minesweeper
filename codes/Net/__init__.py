@@ -1,1 +1,2 @@
-# 뭐가 있어야 하나
+# resnet은 수정 중에 있습니다. 
+# resnet is not availble.

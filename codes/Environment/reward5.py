@@ -6,6 +6,12 @@ from IPython.display import display
 import pickle
 import random
 
+# level dict
+level = {'easy' : {'map_size':(9,9), 'n_mines' : 10},
+         'medium' : {'map_size':(16,16), 'n_mines':40},
+         'expert' : {'map_size':(16,30), 'n_mines':99}}
+
+
 class MinesweeperEnv:
     '''
     This env has 5 rewards : win, lose, progress, guess, and no_progress. 
