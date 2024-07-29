@@ -118,6 +118,28 @@ CNN은 공간상의 정보를 인식할 수 있기 때문에 이미지 인식에
 #### 2. CNN only with conv layer
 [@ryanbaldini](https://github.com/ryanbaldini/MineSweeperNeuralNet)의 모델을 통해 합성곱 신경망만을 사용하는 아이디어를 얻었다. 추가적인 합성곱 신경망을 쌓지 않고 전연결 신경망을 삭제하는 것만으로 100%p 이상의 성능 상승을 보였다. 명확한 원인을 규정할 수는 없었지만 합성곱 층에서 뽑아낼 수 있는 정보들이 전연결 신경망을 거치며 오히려 꼬여 영양가를 잃는 것이 아닐까라는 가설을 세웠다. 
 ![Alt text](pics/image-3.png)
+```python
+class Net(nn.Module):
+  def __init__(self, input_dims, n_actions, conv_units, in_channels=1):
+  super().__init__()
+  self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=conv_units, kernel_size=(3,3), padding=2)
+  self.conv2 = nn.Conv2d(in_channels=conv_units, out_channels=conv_units, kernel_size=(3,3), padding=1)
+  self.conv3 = nn.Conv2d(in_channels=conv_units, out_channels=conv_units, kernel_size=(3,3), padding=1)
+  self.conv4 = nn.Conv2d(in_channels=conv_units, out_channels=conv_units, kernel_size=(3,3), padding=1)
+  self.flatten = nn.Flatten()
+  fc_size = conv_units * (input_dims[-1]+2) * (input_dims[-2]+2)
+  self.fc = nn.Linear(fc_size, n_actions)
+def forward(self, x):
+  # conv area
+  x = F.relu(self.conv1(x))
+  x = F.relu(self.conv2(x))
+  x = F.relu(self.conv3(x))
+  x = F.relu(self.conv4(x))
+  x = self.flatten(x)
+  # flatten area
+  x = self.fc(x)
+  return x
+```
 
 ### Replay Memory 
 추측 가능할 만큼 타일이 까지지 않는다면 사람이 게임을 플레이해도 찍을 수 밖에 없다. 때문에 추측이 불가능할 정도로 적게 타일이 까여진 state는 학습에 있어 주요한 데이터가 아니라 판단했다. replay memory에 저장할 타일의 기준을 세우기 위해 직접 지뢰찾기를 플레이하며 추측을 통해 풀 수 있다 판단한 시점에 까여진 타일의 개수를 세었다. 그 결과 30개의 표본에서 평균 18개라는 수치를 얻을 수 있었다. 이를 바탕으로 에피소드를 진행하며 18개 미만으로 까여진 state는 replay memory에 저장하지 않는 방식으로 replay memory를 수정했다.  
