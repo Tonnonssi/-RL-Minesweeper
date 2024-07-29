@@ -31,7 +31,7 @@ DQN 방법론을 이용했으며, 구체적인 내용 및 구현은 Ch.03에 기
 > 🔥 **Win rate : 0.839 (± 0.037)** 
 
 ## Contents
-#### 1. Environoment
+#### 1. Environment
 - [00. Package](#package)
 - [01. State](#state)
 - [02. Reward Design](#reward-design)
