@@ -90,9 +90,9 @@ DQN 방법론을 이용했으며, 구체적인 내용 및 구현은 Ch.03에 기
 | - | - | - | - | 
 | Win | 지뢰가 아닌 모든 타일을 깐 경우 | 1 | True |
 | Lose | 깐 타일이 지뢰인 경우 | -1 |True |
-| Progess | 주변부에 까진 타일이 있고, 지뢰가 아닌 타일을 깐 경우 | 0.3 | False |
+| Progress | 주변부에 까진 타일이 있고, 지뢰가 아닌 타일을 깐 경우 | 0.3 | False |
 | Guess | 주변부가 까져 있지 않지만, 지뢰가 아닌 타일을 깐 경우 | -0.3 ~ 0.3 | False |
-| No Progess | 이미 누른 타일을 또 누른 경우 | -0.5 / -1 | T/F |  
+| No Progress | 이미 누른 타일을 또 누른 경우 | -0.5 / -1 | T/F |  
 
 - 보상 디자인의 변화는 [Ch.04 Troulbe Shooting](#4-trouble-shooting)  에서 확인할 수 있다. 
 
@@ -317,9 +317,9 @@ Guess와 Progress를 구분하지 않고 동일한 보상을 준 경우가 전�
 | - | - | - | - | 
 | Win | 지뢰가 아닌 모든 타일을 깐 경우 | 1 | True |
 | Lose | 깐 타일이 지뢰인 경우 | -1 |True |
-| Progess | 주변부에 까진 타일이 있고, 지뢰가 아닌 타일을 깐 경우 | 0.3 | False |
+| Progress | 주변부에 까진 타일이 있고, 지뢰가 아닌 타일을 깐 경우 | 0.3 | False |
 | Guess | 주변부가 까져 있지 않지만, 지뢰가 아닌 타일을 깐 경우 | 0.1 | False |
-| No Progess | 이미 누른 타일을 또 누른 경우 | -1 | False |  
+| No Progress | 이미 누른 타일을 또 누른 경우 | -1 | False |  
 
 ### visualize 
 
