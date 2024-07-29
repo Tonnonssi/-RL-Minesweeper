@@ -60,7 +60,7 @@ DQN 방법론을 이용했으며, 구체적인 내용 및 구현은 Ch.03에 기
 - [05. baseline : rule base](#baseline--rule-base)
 
 
-## 01. Environoment
+## 01. Environment
 ### Package
 ``` 
 0.0.0
