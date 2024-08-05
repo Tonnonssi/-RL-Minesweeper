@@ -6,9 +6,19 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
 <img src="https://img.shields.io/badge/r-%23276DC3.svg?&style=for-the-badge&logo=r&logoColor=white"/>
 
-![IMG_2460](https://github.com/user-attachments/assets/41f0d40a-9ca2-482d-9704-269e3d6149a7)
+<table>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/41f0d40a-9ca2-482d-9704-269e3d6149a7" alt="Shared Permissions Instructions" style="max-width: 100%; height: auto;">
+    </td>
+    <td>
+      이 프로젝트는 DQN 강화학습 방법론을 사용해 지뢰찾기를 풀어내는 것을 목표로 한다. 
+    </td>
+  </tr>
+</table>
 
-이 프로젝트는 DQN 강화학습 방법론을 사용해 지뢰찾기를 풀어내는 것을 목표로 한다. 
+
+
 ### About Minesweeper 
 지뢰찾기는 맵에 깔려있는 모든 지뢰를 찾는 게임이다. '찾는다'는 지뢰라고 판단되는 타일을 건들이지 않는 것이다. 따라서 지뢰찾기의 승리조건은 지뢰가 아닌 나머지 모든 타일을 다 까는 것과 같다. 이 맥락에서 일반적으로 지뢰찾기 게임 내 존재하는 깃발 기능은 필수가 아니다. 깃발은 찾아낸 지뢰를 표시하기 위해 있는 기능이다. 승리조건에 미루어 비춰 볼 때, 깃발은 플레이어의 편의성을 위해 존재하는 기능일 뿐 필수요건은 아니다. 따라서 본 프로젝트에서는 깃발 기능을 구현하지 않고 진행했다.  
 
