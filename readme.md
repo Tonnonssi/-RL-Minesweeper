@@ -9,6 +9,9 @@
 <table>
   <tr>
     <td>
+      <img src="https://github.com/user-attachments/assets/3507fa21-906b-4573-bdaa-d7e1136452d4" style="max-width: 100%; height: auto;">
+    </td>
+    <td>
       <img src="https://github.com/user-attachments/assets/41f0d40a-9ca2-482d-9704-269e3d6149a7" style="max-width: 100%; height: auto;">
     </td>
     <td>
